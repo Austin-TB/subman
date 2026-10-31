@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyBps, divRoundHalfUp, parseMoney, parsePercent, toInputValue } from "./money";
+import { applyBps, divRoundHalfUp, parseMoney, parsePercent, toInputValue, toPercentInput } from "./money";
 
 describe("parseMoney", () => {
   it("parses amounts without floats", () => {
@@ -36,5 +36,13 @@ describe("rounding", () => {
     expect(parsePercent("18")).toBe(1800);
     expect(parsePercent("12.5")).toBe(1250);
     expect(parsePercent("x")).toBeNull();
+  });
+  it("round-trips percentages through the input format", () => {
+    expect(toPercentInput(1800)).toBe("18");
+    expect(toPercentInput(1250)).toBe("12.5");
+    expect(toPercentInput(1205)).toBe("12.05");
+    expect(toPercentInput(5)).toBe("0.05");
+    expect(toPercentInput(0)).toBe("0");
+    for (const bps of [0, 5, 100, 1205, 1250, 1800, 10000]) expect(parsePercent(toPercentInput(bps))).toBe(bps);
   });
 });

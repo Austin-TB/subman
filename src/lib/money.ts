@@ -67,6 +67,13 @@ export function formatBps(bps: number): string {
   return `${(bps / 100).toLocaleString(LOCALE, { maximumFractionDigits: 2 })}%`;
 }
 
+/** 1800 → "18", 1250 → "12.5", for form inputs */
+export function toPercentInput(bps: number | null | undefined): string {
+  if (bps == null) return "";
+  const frac = String(bps % 100).padStart(2, "0").replace(/0$/, "");
+  return frac === "0" ? String(Math.floor(bps / 100)) : `${Math.floor(bps / 100)}.${frac}`;
+}
+
 /** "18" or "12.5" → basis points. Returns null if invalid. */
 export function parsePercent(input: string | number | null | undefined): number | null {
   if (input == null) return null;

@@ -29,6 +29,12 @@ const STATUS: Record<string, { label: string; tone: Tone }> = {
   FAILED: { label: "Failed", tone: "red" },
   DEACTIVATED: { label: "Deactivated", tone: "gray" },
   PENDING: { label: "Invite pending", tone: "amber" },
+  // Catalog: products, plans and discount rules
+  INACTIVE: { label: "Inactive", tone: "gray" },
+  AVAILABLE: { label: "Available", tone: "green" },
+  SCHEDULED: { label: "Scheduled", tone: "blue" },
+  ENDED: { label: "Ended", tone: "gray" },
+  USED_UP: { label: "Used up", tone: "amber" },
 };
 
 export function StatusBadge({
