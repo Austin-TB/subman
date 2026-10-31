@@ -286,6 +286,52 @@ async function seedUser(name: string, email: string, role: Role, customer?: { co
   });
 }
 
+/** An active, pausable subscription for the demo customer, so the portal has something to show. Billing creates its invoices. */
+async function seedDemoSubscription() {
+  const user = await db.user.findUnique({ where: { email: "customer@brightloop.test" }, select: { customerId: true } });
+  if (!user?.customerId || (await db.subscription.count({ where: { customerId: user.customerId } })) > 0) return;
+  const plan = await db.plan.findFirst({
+    where: { name: "CRM Monthly" },
+    include: { product: { include: { taxes: { where: { active: true }, select: { id: true } } } } },
+  });
+  const term = await db.paymentTerm.findUnique({ where: { name: "Net 15" } });
+  if (!plan || !term) return;
+
+  // Same gap-free numbering as the app (src/lib/sequences.ts).
+  const rows = await db.$queryRaw<{ value: number }[]>`
+    INSERT INTO "Sequence" ("key", "next") VALUES ('SUB/2026', 2)
+    ON CONFLICT ("key") DO UPDATE SET "next" = "Sequence"."next" + 1
+    RETURNING "next" - 1 AS value`;
+  const number = `SUB/2026/${String(rows[0].value).padStart(5, "0")}`;
+  const start = day("2026-09-01");
+  const quantity = 5;
+
+  await db.subscription.create({
+    data: {
+      number,
+      customerId: user.customerId,
+      planId: plan.id,
+      status: "ACTIVE",
+      startDate: start,
+      expiryDate: day("2027-09-01"),
+      paymentTermId: term.id,
+      cycleStart: start,
+      nextInvoiceDate: start,
+      recurringAmount: quantity * plan.price,
+      lines: {
+        create: {
+          productId: plan.productId,
+          description: plan.product.name,
+          quantity,
+          unitPrice: plan.price,
+          isPlanLine: true,
+          taxes: { connect: plan.product.taxes },
+        },
+      },
+    },
+  });
+}
+
 async function main() {
   await seedTaxes();
   await seedPaymentTerms();
@@ -297,6 +343,7 @@ async function main() {
     phone: "+91 98765 43210",
     city: "Bengaluru",
   });
+  await seedDemoSubscription();
   console.log(`Seed done. Demo logins (password ${DEMO_PASSWORD}):`);
   console.log("  admin@brightloop.test · staff@brightloop.test · customer@brightloop.test");
 }

@@ -14,6 +14,7 @@
     "db:reset": "prisma migrate reset --force",
     "seed": "tsx prisma/seed.ts",
     "seed:bulk": "tsx prisma/seed-bulk.ts",
+    "perf": "tsx scripts/perf.ts",
     "demo:reset": "prisma migrate reset --force && npm run seed && npm run seed:bulk"
   },
   "dependencies": {

@@ -14,6 +14,9 @@ export function defaultUnitPrice(args: {
   return (args.isPlanLine ? args.planPrice : args.productPrice) + (args.variantExtra ?? 0);
 }
 
+/** Money columns are 32-bit. Capping what a subscription bills per period leaves room for tax on its invoices. */
+export const MAX_RECURRING_AMOUNT = 1_500_000_000;
+
 /** What a set of lines bills per period before tax and discounts: the sum of quantity × unit price. */
 export function recurringAmount(lines: { quantity: number; unitPrice: number }[]): number {
   return lines.reduce((total, l) => total + l.quantity * l.unitPrice, 0);

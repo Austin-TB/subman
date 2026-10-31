@@ -5,7 +5,16 @@ import { formatTaxRate } from "@/lib/taxes";
 // Loaders for the pickers on catalog forms. Each offers what is active, plus anything the record being
 // edited already points at, so switching something off never makes an existing record unreadable.
 
-export type TaxOption = { id: string; name: string; rate: string; active: boolean };
+export type TaxOption = {
+  id: string;
+  name: string;
+  /** "18%" or "₹5.00 per unit", ready to show. */
+  rate: string;
+  kind: "PERCENT" | "FIXED";
+  /** Basis points for a percentage, minor units per unit for a fixed tax: what the totals calculation takes. */
+  value: number;
+  active: boolean;
+};
 
 export async function taxOptions(keepIds: string[] = []): Promise<TaxOption[]> {
   const taxes = await db.tax.findMany({
@@ -13,7 +22,7 @@ export async function taxOptions(keepIds: string[] = []): Promise<TaxOption[]> {
     orderBy: { name: "asc" },
     select: { id: true, name: true, kind: true, rate: true, active: true },
   });
-  return taxes.map((t) => ({ id: t.id, name: t.name, rate: formatTaxRate(t), active: t.active }));
+  return taxes.map((t) => ({ id: t.id, name: t.name, rate: formatTaxRate(t), kind: t.kind, value: t.rate, active: t.active }));
 }
 
 export type VariantOption = { id: string; label: string; extraPrice: number };
@@ -24,6 +33,8 @@ export type ProductOption = {
   isAddon: boolean;
   salesPrice: number;
   active: boolean;
+  /** The taxes a new line for this product starts with. */
+  taxIds: string[];
   variants: VariantOption[];
 };
 
@@ -37,14 +48,16 @@ export async function productOptions(keepIds: string[] = []): Promise<ProductOpt
       isAddon: true,
       salesPrice: true,
       active: true,
+      taxes: { select: { id: true } },
       variants: {
         select: { id: true, extraPrice: true, attributeValue: { select: { name: true, attribute: { select: { name: true } } } } },
         orderBy: [{ attributeValue: { attribute: { name: "asc" } } }, { attributeValue: { name: "asc" } }],
       },
     },
   });
-  return products.map(({ variants, ...p }) => ({
+  return products.map(({ variants, taxes, ...p }) => ({
     ...p,
+    taxIds: taxes.map((t) => t.id),
     variants: variants.map((v) => ({ id: v.id, extraPrice: v.extraPrice, label: variantLabel(v.attributeValue) })),
   }));
 }

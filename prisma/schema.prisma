@@ -273,9 +273,12 @@ model Subscription {
   startDate       DateTime           @db.Date
   expiryDate      DateTime?          @db.Date
   validUntil      DateTime?          @db.Date
+  validityDays    Int                @default(30) // how long a quotation stays confirmable once sent
   paymentTermId   String
   paymentTerm     PaymentTerm        @relation(fields: [paymentTermId], references: [id])
   nextInvoiceDate DateTime?          @db.Date
+  cycleStart      DateTime?          @db.Date // billing periods count from here; null = startDate. A resume moves it
+  initialExpiryDate DateTime?        @db.Date // the first expiry, kept when renewed: a renewal extends by this original term
   recurringAmount Int                @default(0) // untaxed amount per billing period
   pausedAt        DateTime?          @db.Date
   closedAt        DateTime?          @db.Date
