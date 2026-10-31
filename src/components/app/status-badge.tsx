@@ -27,6 +27,8 @@ const STATUS: Record<string, { label: string; tone: Tone }> = {
   SENT: { label: "Sent", tone: "green" },
   LOGGED: { label: "Outbox only", tone: "gray" },
   FAILED: { label: "Failed", tone: "red" },
+  DEACTIVATED: { label: "Deactivated", tone: "gray" },
+  PENDING: { label: "Invite pending", tone: "amber" },
 };
 
 export function StatusBadge({

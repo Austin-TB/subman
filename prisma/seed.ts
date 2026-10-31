@@ -70,7 +70,7 @@ async function seedUser(name: string, email: string, role: Role, customer?: { co
 async function main() {
   await seedTaxes();
   await seedPaymentTerms();
-  await seedUser("Asha Admin", "admin@brightloop.test", "ADMIN");
+  await seedUser("Austin", "admin@brightloop.test", "ADMIN");
   await seedUser("Sam Staff", "staff@brightloop.test", "STAFF");
   await seedUser("Chris Customer", "customer@brightloop.test", "CUSTOMER", {
     company: "Acme Retail Pvt Ltd",
